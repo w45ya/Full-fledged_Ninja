@@ -1,10 +1,11 @@
 from pygame import *
 import blocks
 import enemies
+import pyganim
 
 MOVE_SPEED_NINJA = 10
 MOVE_SPEED_STRIKER = 5
-BULLET_SPEED = 15
+BULLET_SPEED = 1
 WIDTH = 32
 HEIGHT = 48
 WIDTH_BULLET = 20
@@ -15,6 +16,10 @@ GRAVITY = 0.35
 COLOR_NINJA = "#888888"
 COLOR_STRIKER = "#FF0000"
 COLOR_BULLET = "#424200"
+ANIMATION_DELAY = 100
+ANIMATION_B = [('sprites/bullet1.png'),
+                ('sprites/bullet2.png')]
+
 
 class Ninja(sprite.Sprite):
     def __init__(self, x, y):
@@ -30,8 +35,16 @@ class Ninja(sprite.Sprite):
         self.image = Surface((WIDTH,HEIGHT))
         self.image.fill(Color(COLOR_NINJA))
         self.rect = Rect(x, y, WIDTH, HEIGHT)
+        self.onGroundArray = [False, False, False, False, False]
+        self.reallyOnGround = False
 
     def update(self, left, right, up, platforms, entities, bullets, delta):
+        self.onGroundArray.pop(0)
+        self.onGroundArray.insert(4, self.onGround)
+        self.reallyOnGround = False
+        for i in range(0,4):
+            if self.onGroundArray[i]:
+                self.reallyOnGround = True
         if up:
             if self.onGround or self.onWall:
                 self.yvel = -JUMP_POWER_NINJA
@@ -53,6 +66,7 @@ class Ninja(sprite.Sprite):
             self.yvel += GRAVITY
             self.onWallOne = False
         self.onGround = False
+
         self.rect.y += self.yvel
         self.collide(0, self.yvel, platforms, entities, bullets)
         self.rect.x += self.xvel
@@ -64,11 +78,11 @@ class Ninja(sprite.Sprite):
                 if isinstance(b, blocks.Block):
                     if xvel > 0:
                         self.rect.right = b.rect.left
-                        if not self.onWallOne:
+                        if (not self.onWallOne) and (not self.reallyOnGround):
                             self.onWall = True
                     if xvel < 0:
                         self.rect.left = b.rect.right
-                        if not self.onWallOne:
+                        if (not self.onWallOne) and (not self.reallyOnGround):
                             self.onWall = True
                     if yvel > 0:
                         self.rect.bottom = b.rect.top
@@ -170,15 +184,22 @@ class Bullet(sprite.Sprite):
         self.startX = x
         self.startY = y
         self.image = Surface((WIDTH_BULLET,WIDTH_BULLET))
-        self.image.fill(Color(COLOR_BULLET))
+        self.image = image.load("sprites/bullet1.png").convert_alpha()
         self.rect = Rect(x, y, WIDTH_BULLET, WIDTH_BULLET)
         self.flipped = False
+        animation = []
+        for anim in ANIMATION_B:
+            animation.append((anim, ANIMATION_DELAY))
+        self.animation = pyganim.PygAnimation(animation)
+        self.animation.play()
+
     def update(self, platforms, entities, monsters):
         if self.flipped:
             self.rect.x -= self.xvel
         else:
             self.rect.x += self.xvel
             self.collide(self.xvel, 0, platforms, entities, monsters)
+        self.animation.blit(self.image, (0, 0))
 
     def collide(self, xvel, yvel, platforms, entities, monsters):
         for b in platforms:

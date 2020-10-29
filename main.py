@@ -1,15 +1,25 @@
+import pygame
+import pyganim
 from pygame import *
 from players import *
 from blocks import *
 from enemies import *
 
+pygame.init()
 WINDOW_SIZE = (1280, 720)
+screen = display.set_mode(
+    WINDOW_SIZE,
+    DOUBLEBUF | HWSURFACE
+)
+pygame.display.set_caption("Two 1/2 ninjas")
+
 NINJA = Ninja(120, 100)
 STRIKER = Striker(80, 100)
 TELEPORT_IN = Teleport_in(-500, -500)
 TELEPORT_OUT = Teleport_out(-500, -500)
 PLAYER = 1
 SHOOT_LENGTH = 500
+
 
 left = right = up = action = False
 entities = sprite.Group()
@@ -62,11 +72,7 @@ for row in level:
     y += PLATFORM_HEIGHT
     x = 0
 
-init()
-screen = display.set_mode(
-    WINDOW_SIZE,
-    DOUBLEBUF | HWSURFACE
-)
+
 
 clock = time.Clock()
 
@@ -150,9 +156,10 @@ while running:
 
 
     screen.fill((100, 200, 255))
+    TELEPORT_IN.update()
+    TELEPORT_OUT.update()
     bullets.update(platforms, entities, monsters)
     monsters.update()
-    print(NINJA.rect.x, NINJA.rect.y)
     if PLAYER == 1:
         NINJA.update(left, right, up, platforms, entities, bullets, delta)
         STRIKER.update(0, 0, 0, platforms, delta)
