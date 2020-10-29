@@ -1,5 +1,5 @@
 from pygame import *
-from blocks import *
+import blocks
 
 MOVE_SPEED_NINJA = 10
 MOVE_SPEED_STRIKER = 5
@@ -18,6 +18,7 @@ class Ninja(sprite.Sprite):
         self.yvel = 0
         self.onGround = False
         self.onWall = False
+        self.onWallOne = False
         self.startX = x
         self.startY = y
         self.flipped = False
@@ -25,7 +26,7 @@ class Ninja(sprite.Sprite):
         self.image.fill(Color(COLOR_NINJA))
         self.rect = Rect(x, y, WIDTH, HEIGHT)
 
-    def update(self, left, right, up, blocks, entities, delta):
+    def update(self, left, right, up, platforms, entities, delta):
         if up:
             if self.onGround or self.onWall:
                 self.yvel = -JUMP_POWER_NINJA
@@ -42,30 +43,42 @@ class Ninja(sprite.Sprite):
             self.yvel += GRAVITY
         if self.onWall:
             self.yvel = 0
+            self.onWallOne = True
+        if self.onGround:
+            self.yvel += GRAVITY
+            self.onWallOne = False
         self.onGround = False
         self.rect.y += self.yvel
-        self.collide(0, self.yvel, blocks)
+        self.collide(0, self.yvel, platforms)
         self.rect.x += self.xvel
-        self.collide(self.xvel, 0, blocks)
+        self.collide(self.xvel, 0, platforms)
 
-    def collide(self, xvel, yvel, blocks):
-        for b in blocks:
+    def collide(self, xvel, yvel, platforms):
+        for b in platforms:
             if sprite.collide_rect(self,b):
-                if xvel > 0:
-                    self.rect.right = b.rect.left
-                    if not self.onGround:
-                        self.onWall = True
-                if xvel < 0:
-                    self.rect.left = b.rect.right
-                    if not self.onGround:
-                        self.onWall = True
-                if yvel > 0:
-                    self.rect.bottom = b.rect.top
-                    self.onGround = True
-                    self.yvel = 0
-                if yvel < 0:
-                    self.rect.top = b.rect.bottom
-                    self.yvel = 0
+                if isinstance(b, blocks.Block):
+                    if xvel > 0:
+                        self.rect.right = b.rect.left
+                        if not self.onWallOne:
+                            self.onWall = True
+                    if xvel < 0:
+                        self.rect.left = b.rect.right
+                        if not self.onWallOne:
+                            self.onWall = True
+                    if yvel > 0:
+                        self.rect.bottom = b.rect.top
+                        self.onGround = True
+                        self.yvel = 0
+                    if yvel < 0:
+                        self.rect.top = b.rect.bottom
+                        self.yvel = 0
+                if isinstance(b, blocks.DeathBlock):
+                    self.death()
+    def death(self):
+        self.teleporting(self.startX,self.startY)
+    def teleporting(self,goX,goY):
+        self.rect.x = goX
+        self.rect.y = goY
 
 class Striker(sprite.Sprite):
     def __init__(self, x, y):
@@ -79,7 +92,7 @@ class Striker(sprite.Sprite):
         self.image.fill(Color(COLOR_STRIKER))
         self.rect = Rect(x, y, WIDTH, HEIGHT)
 
-    def update(self, left, right, up, blocks, delta):
+    def update(self, left, right, up, platforms, delta):
         if up:
             if self.onGround:
                 self.yvel = -JUMP_POWER_STRIKER
@@ -93,21 +106,29 @@ class Striker(sprite.Sprite):
             self.yvel += GRAVITY
         self.onGround = False
         self.rect.y += self.yvel
-        self.collide(0, self.yvel, blocks)
+        self.collide(0, self.yvel, platforms)
         self.rect.x += self.xvel
-        self.collide(self.xvel, 0, blocks)
+        self.collide(self.xvel, 0, platforms)
 
-    def collide(self, xvel, yvel, blocks):
-        for b in blocks:
+    def collide(self, xvel, yvel, platforms):
+        for b in platforms:
             if sprite.collide_rect(self,b):
-                if xvel > 0:
-                    self.rect.right = b.rect.left
-                if xvel < 0:
-                    self.rect.left = b.rect.right
-                if yvel > 0:
-                    self.rect.bottom = b.rect.top
-                    self.onGround = True
-                    self.yvel = 0
-                if yvel < 0:
-                    self.rect.top = b.rect.bottom
-                    self.yvel = 0
+                if isinstance(b, blocks.Block):
+                    if xvel > 0:
+                        self.rect.right = b.rect.left
+                    if xvel < 0:
+                        self.rect.left = b.rect.right
+                    if yvel > 0:
+                        self.rect.bottom = b.rect.top
+                        self.onGround = True
+                        self.yvel = 0
+                    if yvel < 0:
+                        self.rect.top = b.rect.bottom
+                        self.yvel = 0
+                if isinstance(b, blocks.DeathBlock):
+                    self.death()
+    def death(self):
+        self.teleporting(self.startX,self.startY)
+    def teleporting(self,goX,goY):
+        self.rect.x = goX
+        self.rect.y = goY
