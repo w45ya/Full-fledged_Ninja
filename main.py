@@ -1,20 +1,30 @@
 from pygame import *
 from players import *
 from blocks import *
+from enemies import *
 
 WINDOW_SIZE = (1280, 720)
-NINJA = Ninja(120,100)
-STRIKER = Striker(80,100)
+NINJA = Ninja(120, 100)
+STRIKER = Striker(80, 100)
 TELEPORT_IN = Teleport_in(-500, -500)
 TELEPORT_OUT = Teleport_out(-500, -500)
 PLAYER = 1
+SHOOT_LENGTH = 500
 
 left = right = up = action = False
 entities = sprite.Group()
+monsters = sprite.Group()
+bullets = sprite.Group()
 platforms = []
 entities.add(NINJA, STRIKER)
-
-
+ENEMY = Enemy(928, 624, 1088)
+entities.add(ENEMY)
+monsters.add(ENEMY)
+platforms.append(ENEMY)
+ENEMY = Enemy(728, 624, 1088)
+entities.add(ENEMY)
+monsters.add(ENEMY)
+platforms.append(ENEMY)
 level = ["----------------------------------------",
         "-                                      -",
        "-                                      -",
@@ -92,7 +102,6 @@ while running:
             TELEPORT_IN = Teleport_in(-500,-500)
             TELEPORT_OUT.isExist = False
             TELEPORT_IN.isExist = False
-
             for i in platforms:
                 if isinstance(i, Teleport_in):
                     platforms.remove(i)
@@ -101,8 +110,7 @@ while running:
                 if isinstance(i, Teleport_out):
                     platforms.remove(i)
                     entities.remove(i)
-            print(entities)
-            print(platforms)
+
         if key_pressed[K_f]:
             if PLAYER == 1:
                 if TELEPORT_IN.isExist and (not TELEPORT_OUT.isExist):
@@ -122,17 +130,34 @@ while running:
                     TELEPORT_IN.isExist = True
                     entities.add(TELEPORT_IN)
                     platforms.append(TELEPORT_IN)
+            if PLAYER == 2:
+                if STRIKER.flipped:
+                    SURIKEN = Bullet(STRIKER.rect.x - 12, STRIKER.rect.y + 10)
+                    SURIKEN.flipped = True
+                else:
+                    SURIKEN = Bullet(STRIKER.rect.x + 34, STRIKER.rect.y + 10)
+                entities.add(SURIKEN)
+                bullets.add(SURIKEN)
+                platforms.append(SURIKEN)
 
-                print(entities)
-                print(platforms)
+
+    for i in platforms:
+        if isinstance(i, Bullet):
+            if abs(i.rect.x - i.startX) > SHOOT_LENGTH:
+                platforms.remove(i)
+                entities.remove(i)
+                bullets.remove(i)
+
+
     screen.fill((100, 200, 255))
-
-
+    bullets.update(platforms, entities, monsters)
+    monsters.update()
+    print(NINJA.rect.x, NINJA.rect.y)
     if PLAYER == 1:
-        NINJA.update(left, right, up, platforms, entities, delta)
+        NINJA.update(left, right, up, platforms, entities, bullets, delta)
         STRIKER.update(0, 0, 0, platforms, delta)
     if PLAYER == 2:
         STRIKER.update(left, right, 0, platforms, delta)
-        NINJA.update(0, 0, 0, platforms, entities, delta)
+        NINJA.update(0, 0, 0, platforms, entities, bullets, delta)
     entities.draw(screen)
     display.flip()
