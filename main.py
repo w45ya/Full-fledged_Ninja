@@ -1,5 +1,6 @@
 import pygame
 import pyganim
+import pygame_menu
 from pygame import *
 from players import *
 from blocks import *
@@ -16,6 +17,17 @@ screen = display.set_mode(
     DOUBLEBUF | HWSURFACE
 )
 pygame.display.set_caption("One full-fledged ninja")
+PLOT = ['Издревне ниндзя зачищали загадочные земли от странных чёрных',
+         'облачков. Однако, двум ниндзя ',
+         '',
+         'Ага, тут есть сюжет.']
+CONTROLS = ['A, D - передвижение влево/вправо',
+         'Q - переключение между персонажами',
+         'F - действие:',
+         '      Безрукий - создать портал',
+         '      Безногий - метнуть кунай',
+         'E - убрать порталы',
+         'Пробел - прыжок (только безрукий)']
 clock = time.Clock()
 LEVEL_No = 0
 
@@ -41,7 +53,7 @@ def camera_configure(camera, target_rect):
     _, _, w, h = camera
     l, t = -l+WIN_WIDTH / 2, -t+WIN_HEIGHT / 2
 
-    l = min(0, l)
+    l = min(-32, l)
     l = max(-(camera.width-WIN_WIDTH), l)
     t = max(-(camera.height-WIN_HEIGHT), t)
     t = min(0, t)
@@ -51,6 +63,14 @@ def camera_configure(camera, target_rect):
 
 def game():
     level = l.levels[LEVEL_No]
+    for i in entities:
+        entities.remove(i)
+    for i in monsters:
+        monsters.remove(i)
+    for i in bullets:
+        bullets.remove(i)
+    for i in platforms:
+        platforms.remove(i)
     NINJA = Ninja(l.ninjas[LEVEL_No][0], l.ninjas[LEVEL_No][1])
     STRIKER = Striker(l.strikers[LEVEL_No][0], l.strikers[LEVEL_No][1])
     index = 1
@@ -59,7 +79,6 @@ def game():
         EnY = l.monsters[LEVEL_No][index+1]
         EnL = l.monsters[LEVEL_No][index+2]
         ENEMY = Enemy(EnX, EnY, EnL)
-        print(EnX, EnY, EnL)
         entities.add(ENEMY)
         monsters.add(ENEMY)
         platforms.append(ENEMY)
@@ -137,8 +156,8 @@ def game():
             x += PLATFORM_WIDTH
         y += PLATFORM_HEIGHT
         x = 0
-        total_level_width  = len(level[0])*PLATFORM_WIDTH # Высчитываем фактическую ширину уровня
-        total_level_height = len(level)*PLATFORM_HEIGHT   # высоту
+        total_level_width  = len(level[0])*PLATFORM_WIDTH
+        total_level_height = len(level)*PLATFORM_HEIGHT
 
         camera = Camera(camera_configure, total_level_width, total_level_height)
 
@@ -169,7 +188,12 @@ def game():
                 PLAYER = 1
             if key_pressed[K_2]:
                 PLAYER = 2
-            if key_pressed[K_g]:
+            if key_pressed[K_q]:
+                if PLAYER == 1:
+                    PLAYER = 2
+                else:
+                    PLAYER = 1
+            if key_pressed[K_e]:
                 TELEPORT_OUT = Teleport_out(-500,-500)
                 TELEPORT_IN = Teleport_in(-500,-500)
                 TELEPORT_OUT.isExist = False
@@ -204,14 +228,12 @@ def game():
                         platforms.append(TELEPORT_IN)
                 if PLAYER == 2:
                     if STRIKER.flipped:
-                        SURIKEN = Bullet(STRIKER.rect.x - 12, STRIKER.rect.y + 10)
-                        SURIKEN.flipped = True
+                        SURIKEN = Bullet(STRIKER.rect.x - 12, STRIKER.rect.y + 10, True)
                     else:
-                        SURIKEN = Bullet(STRIKER.rect.x + 34, STRIKER.rect.y + 10)
+                        SURIKEN = Bullet(STRIKER.rect.x + 34, STRIKER.rect.y + 10, False)
                     entities.add(SURIKEN)
                     bullets.add(SURIKEN)
                     platforms.append(SURIKEN)
-
 
         for i in platforms:
             if isinstance(i, Bullet):
@@ -219,7 +241,14 @@ def game():
                     platforms.remove(i)
                     entities.remove(i)
                     bullets.remove(i)
-
+                for j in platforms:
+                        if isinstance(j, blocks.DeathBlock) or isinstance(j, blocks.Block) :
+                            if sprite.collide_rect(i,j):
+                                platforms.remove(i)
+                                entities.remove(i)
+                                monsters.remove(i)
+                                i.rect.x = -500
+                                i.rect.y = -500
 
         screen.fill((100, 200, 255))
         TELEPORT_IN.update()
@@ -237,4 +266,48 @@ def game():
         for e in entities:
             screen.blit(e.image, camera.apply(e))
         display.flip()
-game()
+
+def change_level(value, lvl):
+    global LEVEL_No
+    selected, index = value
+    LEVEL_No = lvl
+
+plot_theme = pygame_menu.themes.THEME_DEFAULT.copy()
+plot_theme.widget_margin = (0, 0)
+plot_theme.widget_offset = (0, 0.05)
+
+plot_menu = pygame_menu.Menu(
+    height=WINDOW_SIZE[1] * 0.6,
+    onclose=pygame_menu.events.DISABLE_CLOSE,
+    theme=plot_theme,
+    title='Сюжет',
+    width=WINDOW_SIZE[0] * 0.6,
+)
+for m in PLOT:
+    plot_menu.add_label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
+plot_menu.add_label('')
+plot_menu.add_button('Назад', pygame_menu.events.BACK)
+
+controls_theme = pygame_menu.themes.THEME_DEFAULT.copy()
+controls_theme.widget_margin = (0, 0)
+controls_theme.widget_offset = (0, 0.05)
+
+controls_menu = pygame_menu.Menu(
+    height=WINDOW_SIZE[1] * 0.6,
+    onclose=pygame_menu.events.DISABLE_CLOSE,
+    theme=controls_theme,
+    title='Управление',
+    width=WINDOW_SIZE[0] * 0.315,
+)
+for m in CONTROLS:
+    controls_menu.add_label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
+controls_menu.add_label('')
+controls_menu.add_button('Назад', pygame_menu.events.BACK)
+
+menu = pygame_menu.Menu(600,500,'Полноценный ниндзя',theme=pygame_menu.themes.THEME_GREEN)
+menu.add_button('Игра', game)
+menu.add_selector('Уровень:', [('1', 0), ('2', 1), ('3', 2)], onchange=change_level)
+menu.add_button('Сюжет', plot_menu)
+menu.add_button('Управление', controls_menu)
+menu.add_button('Выход', pygame_menu.events.EXIT)
+menu.mainloop(screen)

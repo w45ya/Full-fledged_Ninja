@@ -15,15 +15,15 @@ level1 = ["                                           ",
        "-                                          ",
        "-                                          ",
        "-                                          ",
-       "-                   [P]                    ",
        "-       X                                  ",
-       "-GGGGGGGGGGGGGG}                           ",
+       "-       X                                  ",
+       "-GGGGGGGGGGGGGG}     [P]                   ",
        "-EEEEEEEEEEEEEE)                           ",
        "-EEEEEEEEEEEEEE)                           ",
        "-EEEEEEEEEEEEEE)                           ",
        "-EEEEEEEEEEEEEE)                           ",
        "-EEEEEEEEEEEEEE)                           ",
-       "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"]
+       "XEEEEEEEEEEEEEE)XXXXXXXXXXXXXXXXXXXXXXXXXXX"]
 
 level2 = ["                                           ",
        "-                                          ",
@@ -47,7 +47,7 @@ level2 = ["                                           ",
        "-GGGGGGGGGGGGGG}                           ",
        "-EEEEEEEEEEEEEE)                           ",
        "-EEEEEEEEEEEEEE)                           ",
-       "-EEEEEEEEEEEEEE)                           ",
+       "-EEEE     EEEEE)                           ",
        "-EEEEEEEEEEEEEE)                           ",
        "-EEEEEEEEEEEEEE)                           ",
        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"]
@@ -79,7 +79,7 @@ level3 = ["                                           ",
        "-EEEEEEEEEEEEEE)                           ",
        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"]
 
-levels = [level1,level2,level3]
+levels = [level1, level2, level3]
 ninja1 = [100,100]
 ninja2 = [100,100]
 ninja3 = [100,100]
@@ -89,7 +89,7 @@ striker2 = [100,100]
 striker3 = [100,100]
 strikers = [striker1, striker2, striker3]
 
-monster1 = [2, 200, 200, 400, 300, 300, 400]
+monster1 = [1, 670, 570, 730]
 monster2 = [2, 200, 200, 200, 300, 300, 300]
 monster3 = [2, 200, 200, 200, 300, 300, 300]
 monsters = [monster1, monster2, monster3]
