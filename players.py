@@ -5,7 +5,7 @@ import pyganim
 
 MOVE_SPEED_NINJA = 10
 MOVE_SPEED_STRIKER = 5
-BULLET_SPEED = 1
+BULLET_SPEED = 5
 WIDTH = 32
 HEIGHT = 48
 WIDTH_BULLET = 20
@@ -16,9 +16,7 @@ GRAVITY = 0.35
 COLOR_NINJA = "#888888"
 COLOR_STRIKER = "#FF0000"
 COLOR_BULLET = "#424200"
-ANIMATION_DELAY = 100
-ANIMATION_B = [('sprites/bullet1.png'),
-                ('sprites/bullet2.png')]
+
 
 
 class Ninja(sprite.Sprite):
@@ -187,11 +185,6 @@ class Bullet(sprite.Sprite):
         self.image = image.load("sprites/bullet1.png").convert_alpha()
         self.rect = Rect(x, y, WIDTH_BULLET, WIDTH_BULLET)
         self.flipped = False
-        animation = []
-        for anim in ANIMATION_B:
-            animation.append((anim, ANIMATION_DELAY))
-        self.animation = pyganim.PygAnimation(animation)
-        self.animation.play()
 
     def update(self, platforms, entities, monsters):
         if self.flipped:
@@ -199,7 +192,6 @@ class Bullet(sprite.Sprite):
         else:
             self.rect.x += self.xvel
             self.collide(self.xvel, 0, platforms, entities, monsters)
-        self.animation.blit(self.image, (0, 0))
 
     def collide(self, xvel, yvel, platforms, entities, monsters):
         for b in platforms:
