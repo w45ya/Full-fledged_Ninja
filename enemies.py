@@ -3,9 +3,17 @@ import players
 ENEMY_WIDTH = 32
 ENEMY_HEIGHT = 32
 ENEMY_COLOR = "#2110FF"
-ANIMATION_DELAY = 500
-ANIMATION_ENEMY = [('sprites/enemy1.png'),
-                ('sprites/enemy2.png')]
+import sys
+import os
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 class Enemy(sprite.Sprite):
     def __init__(self, x, y, end):
         self.x = x
@@ -14,7 +22,8 @@ class Enemy(sprite.Sprite):
         self.image = Surface((ENEMY_WIDTH, ENEMY_HEIGHT))
         self.path = [x, end]
         self.vel = 1.5
-        self.image = image.load("sprites/enemy.png").convert_alpha()
+        asset_url = resource_path("sprites/enemy.png")
+        self.image = image.load(asset_url).convert_alpha()
 
 
 

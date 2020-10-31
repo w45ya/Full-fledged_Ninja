@@ -1,13 +1,26 @@
 import pygame
 import pyganim
 import pygame_menu
+from pygame_menu import sound as snd_menu
 from pygame import *
 from players import *
 from blocks import *
 from enemies import *
 import levels as l
-import sys
 import time as t
+import sys
+import os
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+pygame.mixer.pre_init(44100, -16, 2, 2048)
+pygame.mixer.init()
 pygame.init()
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
@@ -19,7 +32,7 @@ screen = display.set_mode(
     DOUBLEBUF | HWSURFACE
 )
 pygame.display.set_caption("One full-fledged ninja")
-PLOT = ['Издревне ниндзя зачищали загадочные земли от странных чёрных',
+PLOT = ['Издревле ниндзя зачищали загадочные земли от странных чёрных',
          'облачков. Однако, двух ниндзя отстранили от исполнения своего',
          'долга из-за имеющихся у них увечий. Один из них - герой войны,',
          'изучивший ниндзютсу телепортации, но лишившийся рук во время',
@@ -45,6 +58,23 @@ monsters = sprite.Group()
 bullets = sprite.Group()
 platforms = []
 
+asset_url = resource_path('sound/60013_qubodup_whoosh.ogg')
+WHOOSH_SOUND = mixer.Sound(asset_url)
+asset_url = resource_path('sound/456373__felixyadomi__hop9.ogg')
+JUMP_SOUND = mixer.Sound(asset_url)
+asset_url = resource_path('sound/250128__tim-kahn__portal02.ogg')
+PORTAL_SOUND = mixer.Sound(asset_url)
+asset_url = resource_path('sound/76966__michel88__paind.ogg')
+MONSTER_SOUND = mixer.Sound(asset_url)
+asset_url = resource_path('sound/416838__alineaudio__grunt2-death-pain.ogg')
+DEATH_SOUND = mixer.Sound(asset_url)
+asset_url = resource_path('sound/461017__alanmcki__fast-whoosh.ogg')
+SWITCH_SOUND = mixer.Sound(asset_url)
+asset_url = resource_path('sound/107640__qat__door-open.ogg')
+PORTAL_OPEN_SOUND = mixer.Sound(asset_url)
+asset_url = resource_path('sound/514938__matrixxx__scifi-door.ogg')
+PORTAL_CLOSE_SOUND = mixer.Sound(asset_url)
+sounds = [JUMP_SOUND, PORTAL_SOUND, DEATH_SOUND,MONSTER_SOUND]
 
 class Camera(object):
     def __init__(self, camera_func, width, height):
@@ -198,15 +228,22 @@ def game():
                 running = False
                 LEVEL_No = 99
             if key_pressed[K_1]:
-                PLAYER = 1
+                if PLAYER == 2:
+                    SWITCH_SOUND.play()
+                    PLAYER = 1
             if key_pressed[K_2]:
-                PLAYER = 2
+                if PLAYER == 1:
+                    SWITCH_SOUND.play()
+                    PLAYER = 2
             if key_pressed[K_q]:
+                SWITCH_SOUND.play()
                 if PLAYER == 1:
                     PLAYER = 2
                 else:
                     PLAYER = 1
             if key_pressed[K_e] or key_pressed[K_g]:
+                if TELEPORT_IN.isExist:
+                    PORTAL_CLOSE_SOUND.play()
                 TELEPORT_OUT = Teleport_out(-500,-500)
                 TELEPORT_IN = Teleport_in(-500,-500)
                 TELEPORT_OUT.isExist = False
@@ -223,6 +260,7 @@ def game():
             if key_pressed[K_f]:
                 if PLAYER == 1:
                     if TELEPORT_IN.isExist and (not TELEPORT_OUT.isExist):
+                        PORTAL_OPEN_SOUND.play()
                         if NINJA.flipped:
                             TELEPORT_OUT = Teleport_out(NINJA.rect.x-32,NINJA.rect.y)
                         else:
@@ -232,6 +270,7 @@ def game():
                         platforms.append(TELEPORT_OUT)
 
                     if not TELEPORT_IN.isExist:
+                        PORTAL_OPEN_SOUND.play()
                         if NINJA.flipped:
                             TELEPORT_IN = Teleport_in(NINJA.rect.x-32,NINJA.rect.y)
                         else:
@@ -240,6 +279,7 @@ def game():
                         entities.add(TELEPORT_IN)
                         platforms.append(TELEPORT_IN)
                 if PLAYER == 2:
+                    WHOOSH_SOUND.play()
                     if STRIKER.flipped:
                         SURIKEN = Bullet(STRIKER.rect.x - 12, STRIKER.rect.y + 10, True)
                     else:
@@ -266,15 +306,15 @@ def game():
         screen.fill((100, 200, 255))
         TELEPORT_IN.update()
         TELEPORT_OUT.update()
-        bullets.update(platforms, entities, monsters)
+        bullets.update(platforms, entities, monsters, sounds)
         monsters.update()
         if PLAYER == 1:
-            NINJA.update(left, right, up, platforms, entities, bullets, delta)
-            STRIKER.update(0, 0, 0, platforms, delta)
+            NINJA.update(left, right, up, platforms, entities, bullets, delta, sounds)
+            STRIKER.update(0, 0, 0, platforms, delta, sounds)
             camera.update(NINJA)
         if PLAYER == 2:
-            STRIKER.update(left, right, 0, platforms, delta)
-            NINJA.update(0, 0, 0, platforms, entities, bullets, delta)
+            STRIKER.update(left, right, 0, platforms, delta, sounds)
+            NINJA.update(0, 0, 0, platforms, entities, bullets, delta, sounds)
             camera.update(STRIKER)
         for e in entities:
             screen.blit(e.image, camera.apply(e))
@@ -295,7 +335,12 @@ def change_level(value, lvl):
     selected, index = value
     LEVEL_No = lvl
 
-plot_theme = pygame_menu.themes.THEME_DEFAULT.copy()
+
+asset_font = resource_path('font/OpenSans.ttf')
+
+plot_theme = pygame_menu.themes.THEME_DARK.copy()
+plot_theme.title_font = asset_font
+plot_theme.widget_font = asset_font
 plot_theme.widget_margin = (0, 0)
 plot_theme.widget_offset = (0, 0.05)
 
@@ -304,23 +349,19 @@ plot_menu = pygame_menu.Menu(
     onclose=pygame_menu.events.DISABLE_CLOSE,
     theme=plot_theme,
     title='Сюжет',
-    width=WINDOW_SIZE[0] * 0.6,
+    width=WINDOW_SIZE[0] * 0.6
 )
 for m in PLOT:
     plot_menu.add_label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
 plot_menu.add_label('')
 plot_menu.add_button('Назад', pygame_menu.events.BACK)
 
-controls_theme = pygame_menu.themes.THEME_DEFAULT.copy()
-controls_theme.widget_margin = (0, 0)
-controls_theme.widget_offset = (0, 0.05)
-
 controls_menu = pygame_menu.Menu(
     height=WINDOW_SIZE[1] * 0.6,
     onclose=pygame_menu.events.DISABLE_CLOSE,
-    theme=controls_theme,
+    theme=plot_theme,
     title='Управление',
-    width=WINDOW_SIZE[0] * 0.315,
+    width=WINDOW_SIZE[0] * 0.315
 )
 for m in CONTROLS:
     controls_menu.add_label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
@@ -333,10 +374,16 @@ def setLevelGame():
         game()
         LEVEL_No += 1
 
-menu = pygame_menu.Menu(600,500,'Полноценный ниндзя',theme=pygame_menu.themes.THEME_GREEN)
+engine = snd_menu.Sound()
+asset_url = resource_path('sound/539606__fivebrosstopmosyt__ui-alert-2.ogg')
+engine.set_sound(snd_menu.SOUND_TYPE_CLICK_MOUSE, asset_url)
+
+
+menu = pygame_menu.Menu(600,500,'Полноценный ниндзя',theme=plot_theme)
 menu.add_button('Сюжет', plot_menu)
 menu.add_button('Управление', controls_menu)
 menu.add_button('Играть', setLevelGame)
 menu.add_selector('Уровень:', [('1', 0), ('2', 1), ('3', 2)], onchange=change_level)
 menu.add_button('Выход', pygame_menu.events.EXIT)
+menu.set_sound(engine, recursive=True)
 menu.mainloop(screen)
