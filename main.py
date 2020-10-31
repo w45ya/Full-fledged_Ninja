@@ -18,9 +18,15 @@ screen = display.set_mode(
 )
 pygame.display.set_caption("One full-fledged ninja")
 PLOT = ['Издревне ниндзя зачищали загадочные земли от странных чёрных',
-         'облачков. Однако, двум ниндзя ',
+         'облачков. Однако, двух ниндзя отстранили от исполнения своего',
+         'долга из-за имеющихся у них увечий. Один из них - герой войны,',
+         'изучивший ниндзютсу телепортации, но лишившийся рук во время',
+         'битвы с белыми колючками. Второй - просто балбес, лишившийся ног,',
+         'потому что не слушал маму и играл на трамвайных путях. Но руки',
+         'у него на месте, а значит и кунаи кидать способен.',
          '',
-         'Ага, тут есть сюжет.']
+         'Смогут ли два калеки доказать свою небесполезность',
+         'и работая в команде стать одним полноценным ниндзя?']
 CONTROLS = ['A, D - передвижение влево/вправо',
          'Q - переключение между персонажами',
          'F - действие:',
@@ -62,6 +68,7 @@ def camera_configure(camera, target_rect):
 
 
 def game():
+    global LEVEL_No, platforms
     level = l.levels[LEVEL_No]
     for i in entities:
         entities.remove(i)
@@ -69,8 +76,7 @@ def game():
         monsters.remove(i)
     for i in bullets:
         bullets.remove(i)
-    for i in platforms:
-        platforms.remove(i)
+    platforms = []
     NINJA = Ninja(l.ninjas[LEVEL_No][0], l.ninjas[LEVEL_No][1])
     STRIKER = Striker(l.strikers[LEVEL_No][0], l.strikers[LEVEL_No][1])
     index = 1
@@ -88,7 +94,6 @@ def game():
     TELEPORT_OUT = Teleport_out(-500, -500)
     PLAYER = 1
     SHOOT_LENGTH = 500
-
 
     left = right = up = action = False
 
@@ -170,6 +175,7 @@ def game():
         for e in event.get():
             if e.type == QUIT:
                 running = False
+                LEVEL_No = 99
             if e.type == KEYDOWN and e.key == K_a:
                 left = True
             if e.type == KEYDOWN and e.key == K_d:
@@ -184,6 +190,9 @@ def game():
                 up = False
             if e.type == KEYUP and e.key == K_f:
                 action = False
+            if key_pressed[K_ESCAPE]:
+                running = False
+                LEVEL_No = 99
             if key_pressed[K_1]:
                 PLAYER = 1
             if key_pressed[K_2]:
@@ -193,7 +202,7 @@ def game():
                     PLAYER = 2
                 else:
                     PLAYER = 1
-            if key_pressed[K_e]:
+            if key_pressed[K_e] or key_pressed[K_g]:
                 TELEPORT_OUT = Teleport_out(-500,-500)
                 TELEPORT_IN = Teleport_in(-500,-500)
                 TELEPORT_OUT.isExist = False
@@ -242,7 +251,7 @@ def game():
                     entities.remove(i)
                     bullets.remove(i)
                 for j in platforms:
-                        if isinstance(j, blocks.DeathBlock) or isinstance(j, blocks.Block) :
+                        if isinstance(j, blocks.DeathBlock) or isinstance(j, blocks.Block):
                             if sprite.collide_rect(i,j):
                                 platforms.remove(i)
                                 entities.remove(i)
@@ -266,6 +275,16 @@ def game():
         for e in entities:
             screen.blit(e.image, camera.apply(e))
         display.flip()
+
+        gameWin = True
+        for i in platforms:
+            if isinstance(i, Enemy):
+                gameWin = False
+
+        if gameWin:
+            time.wait(500)
+            running = False
+
 
 def change_level(value, lvl):
     global LEVEL_No
@@ -304,10 +323,16 @@ for m in CONTROLS:
 controls_menu.add_label('')
 controls_menu.add_button('Назад', pygame_menu.events.BACK)
 
+def setLevelGame():
+    global LEVEL_No
+    while (LEVEL_No < len(l.levels)):
+        game()
+        LEVEL_No += 1
+
 menu = pygame_menu.Menu(600,500,'Полноценный ниндзя',theme=pygame_menu.themes.THEME_GREEN)
-menu.add_button('Игра', game)
-menu.add_selector('Уровень:', [('1', 0), ('2', 1), ('3', 2)], onchange=change_level)
 menu.add_button('Сюжет', plot_menu)
 menu.add_button('Управление', controls_menu)
+menu.add_button('Играть', setLevelGame)
+menu.add_selector('Уровень:', [('1', 0), ('2', 1), ('3', 2)], onchange=change_level)
 menu.add_button('Выход', pygame_menu.events.EXIT)
 menu.mainloop(screen)

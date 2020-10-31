@@ -168,8 +168,9 @@ class Ninja(sprite.Sprite):
                             self.teleporting(i.startX,i.startY)
     def death(self):
         time.wait(500)
+        self.xvel = 0
+        self.yvel = 0
         self.teleporting(self.startX, self.startY)
-
 
     def teleporting(self, goX, goY):
         self.rect.x = goX
@@ -256,13 +257,13 @@ class Striker(sprite.Sprite):
                             self.teleporting(i.startX,i.startY)
     def death(self):
         time.wait(500)
+        self.xvel = 0
+        self.yvel = 0
         self.teleporting(self.startX, self.startY)
-
 
     def teleporting(self, goX, goY):
         self.rect.x = goX
         self.rect.y = goY
-
 
 
 class Bullet(sprite.Sprite):
