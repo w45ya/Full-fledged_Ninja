@@ -1,7 +1,7 @@
 # Ninjas_game
-For SFEDU Game Jam 2020
+For MMCS Game Jam 2020
 
-Небольшая игра-платформер, созданая на python 3.7 при помощи библиотек pygame, pygame_menu и pyganim в рамках ЮФУ Game Jam 2020.
+Небольшая игра-платформер, созданая на python 3.7 при помощи библиотек pygame, pygame_menu и pyganim в рамках MMCS Game Jam 2020.
 
 Звуки взяты с freesound.org.
 
