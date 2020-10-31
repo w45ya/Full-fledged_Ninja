@@ -131,6 +131,10 @@ class Ninja(sprite.Sprite):
         self.onGround = False
         if self.rect.x < 0:
             self.death()
+        if self.xvel > MOVE_SPEED_NINJA:
+            self.xvel = MOVE_SPEED_NINJA
+        if self.xvel < -MOVE_SPEED_NINJA:
+            self.xvel = -MOVE_SPEED_NINJA
         self.rect.y += self.yvel
         self.collide(0, self.yvel, platforms, entities, bullets)
         self.rect.x += self.xvel
@@ -229,6 +233,10 @@ class Striker(sprite.Sprite):
         if not self.onGround:
             self.yvel += GRAVITY
         self.onGround = False
+        if self.xvel > MOVE_SPEED_STRIKER:
+            self.xvel = MOVE_SPEED_STRIKER
+        if self.xvel < -MOVE_SPEED_STRIKER:
+            self.xvel = -MOVE_SPEED_STRIKER
         self.rect.y += self.yvel
         self.collide(0, self.yvel, platforms)
         self.rect.x += self.xvel
