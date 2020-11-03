@@ -32,27 +32,28 @@ screen = display.set_mode(
     DOUBLEBUF | HWSURFACE
 )
 pygame.display.set_caption("One full-fledged ninja")
-PLOT = ['Издревле ниндзя зачищали загадочные земли от странных чёрных',
-         'облачков. Однако, двух ниндзя отстранили от исполнения своего',
-         'долга из-за имеющихся у них увечий. Один из них - герой войны,',
-         'изучивший ниндзютсу телепортации, но лишившийся рук во время',
-         'битвы с белыми колючками. Однако прыгучести он не растерял и',
-         'даже научился цепляться ногами за стены. Второй - просто балбес',
-         'лишившийся ног, потому что не слушал маму и играл на трамвайных',
-         'путях. Но руки у него на месте, а значит и кунаи кидать способен.',
+PLOT = ['Издревле ниндзя зачищали загадочные земли от странных чёрных облачков.',
+         'Однако, двух ниндзя отстранили от исполнения своего долга из-за',
+         'имеющихся у них увечий. Один из них - герой войны, изучивший ниндзютсу',
+         'телепортации, но лишившийся рук во время битвы с белыми колючками.',
+         'Однако прыгучести он не растерял и даже научился цепляться ногами',
+         'за стены. Второй - просто балбес лишившийся ног, потому что не слушал',
+         'маму и играл на трамвайных путях. Но руки у него на месте,',
+         'а значит и кунаи кидать способен.',
          '',
-         'Смогут ли два калеки доказать свою небесполезность',
-         'и, работая в команде, стать одним полноценным ниндзя?']
+         'Смогут ли два калеки доказать свою небесполезность и, работая в команде,',
+         'стать одним полноценным ниндзя?']
 CONTROLS = ['A, D - передвижение влево/вправо',
          'Q - переключение между персонажами',
          'F - действие:',
          '      Безрукий - создать портал',
          '      Безногий - метнуть кунай',
-         'E - убрать порталы',
-         'Пробел - прыжок (только безрукий)']
+         'E или G - убрать порталы',
+         'Пробел - прыжок (только безрукий)',
+         'ESC - выход в главное меню']
 clock = time.Clock()
 LEVEL_No = 0
-
+lvl_svd = 0
 entities = sprite.Group()
 monsters = sprite.Group()
 bullets = sprite.Group()
@@ -101,7 +102,7 @@ def camera_configure(camera, target_rect):
 
 
 def game():
-    global LEVEL_No, platforms
+    global LEVEL_No, platforms, lvl_svd
     level = l.levels[LEVEL_No]
     for i in entities:
         entities.remove(i)
@@ -226,6 +227,7 @@ def game():
 
             if key_pressed[K_ESCAPE]:
                 running = False
+                lvl_svd = LEVEL_No
                 LEVEL_No = 99
             if key_pressed[K_1]:
                 if PLAYER == 2:
@@ -296,12 +298,15 @@ def game():
                     bullets.remove(i)
                 for j in platforms:
                         if isinstance(j, blocks.DeathBlock) or isinstance(j, blocks.Block):
-                            if sprite.collide_rect(i,j):
-                                platforms.remove(i)
-                                entities.remove(i)
-                                monsters.remove(i)
-                                i.rect.x = -500
-                                i.rect.y = -500
+                            try:
+                                if sprite.collide_rect(i,j):
+                                    platforms.remove(i)
+                                    entities.remove(i)
+                                    monsters.remove(i)
+                                    i.rect.x = -500
+                                    i.rect.y = -500
+                            except:
+                                print("Almost crashed...")
 
         screen.fill((100, 200, 255))
         TELEPORT_IN.update()
@@ -370,6 +375,8 @@ controls_menu.add_button('Назад', pygame_menu.events.BACK)
 
 def setLevelGame():
     global LEVEL_No
+    if LEVEL_No == 100:
+        LEVEL_No = lvl_svd
     while (LEVEL_No < len(l.levels)):
         game()
         LEVEL_No += 1

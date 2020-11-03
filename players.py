@@ -121,7 +121,6 @@ class Ninja(sprite.Sprite):
                 self.yvel = -JUMP_POWER_NINJA
                 sounds[0].play()
             self.onWall = False
-
         if left and not self.onWall:
             self.xvel += -MOVE_SPEED_NINJA * delta
             self.flipped = True
@@ -156,7 +155,7 @@ class Ninja(sprite.Sprite):
             self.yvel += GRAVITY
             self.onWallOne = False
         self.onGround = False
-        if self.rect.x < 0:
+        if self.rect.x < 32 or self.rect.y > 5000:
             self.death(sounds)
         if self.xvel > MOVE_SPEED_NINJA:
             self.xvel = MOVE_SPEED_NINJA
@@ -268,6 +267,8 @@ class Striker(sprite.Sprite):
             self.xvel = MOVE_SPEED_STRIKER
         if self.xvel < -MOVE_SPEED_STRIKER:
             self.xvel = -MOVE_SPEED_STRIKER
+        if self.rect.x < 32 or self.rect.y > 5000:
+            self.death(sounds)
         self.rect.y += self.yvel
         self.collide(0, self.yvel, platforms, sounds)
         self.rect.x += self.xvel
