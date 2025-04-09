@@ -195,7 +195,7 @@ def game():
             x += PLATFORM_WIDTH
         y += PLATFORM_HEIGHT
         x = 0
-        total_level_width  = len(level[0])*PLATFORM_WIDTH
+        total_level_width = len(level[0])*PLATFORM_WIDTH
         total_level_height = len(level)*PLATFORM_HEIGHT
 
         camera = Camera(camera_configure, total_level_width, total_level_height)
@@ -347,31 +347,31 @@ plot_theme = pygame_menu.themes.THEME_DARK.copy()
 plot_theme.title_font = asset_font
 plot_theme.widget_font = asset_font
 plot_theme.widget_margin = (0, 0)
-plot_theme.widget_offset = (0, 0.05)
+#plot_theme.widget_offset = (0, 0.05)
 
 plot_menu = pygame_menu.Menu(
     height=WINDOW_SIZE[1] * 0.7,
-    onclose=pygame_menu.events.DISABLE_CLOSE,
+    onclose=pygame_menu.events.NONE,
     theme=plot_theme,
     title='Сюжет',
     width=WINDOW_SIZE[0] * 0.6
 )
 for m in PLOT:
-    plot_menu.add_label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
-plot_menu.add_label('')
-plot_menu.add_button('Назад', pygame_menu.events.BACK)
+    plot_menu.add.label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
+plot_menu.add.label('')
+plot_menu.add.button('Назад', pygame_menu.events.BACK)
 
 controls_menu = pygame_menu.Menu(
     height=WINDOW_SIZE[1] * 0.6,
-    onclose=pygame_menu.events.DISABLE_CLOSE,
+    onclose=pygame_menu.events.NONE,
     theme=plot_theme,
     title='Управление',
     width=WINDOW_SIZE[0] * 0.315
 )
 for m in CONTROLS:
-    controls_menu.add_label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
-controls_menu.add_label('')
-controls_menu.add_button('Назад', pygame_menu.events.BACK)
+    controls_menu.add.label(m, align=pygame_menu.locals.ALIGN_LEFT, font_size=20)
+controls_menu.add.label('')
+controls_menu.add.button('Назад', pygame_menu.events.BACK)
 
 def setLevelGame():
     global LEVEL_No
@@ -386,11 +386,11 @@ asset_url = resource_path('sound/539606__fivebrosstopmosyt__ui-alert-2.ogg')
 engine.set_sound(snd_menu.SOUND_TYPE_CLICK_MOUSE, asset_url)
 
 
-menu = pygame_menu.Menu(600,500,'Полноценный ниндзя',theme=plot_theme)
-menu.add_button('Сюжет', plot_menu)
-menu.add_button('Управление', controls_menu)
-menu.add_button('Играть', setLevelGame)
-menu.add_selector('Уровень:', [('1', 0), ('2', 1), ('3', 2)], onchange=change_level)
-menu.add_button('Выход', pygame_menu.events.EXIT)
+menu = pygame_menu.Menu('Полноценный ниндзя',1280,720,theme=plot_theme)
+menu.add.button('Сюжет', plot_menu)
+menu.add.button('Управление', controls_menu)
+menu.add.button('Играть', setLevelGame)
+menu.add.selector('Уровень:', [('1', 0), ('2', 1), ('3', 2)], onchange=change_level)
+menu.add.button('Выход', pygame_menu.events.EXIT)
 menu.set_sound(engine, recursive=True)
 menu.mainloop(screen)
